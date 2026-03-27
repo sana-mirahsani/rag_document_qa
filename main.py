@@ -14,6 +14,7 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.prompts import ChatPromptTemplate
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 load_dotenv()
 
@@ -22,10 +23,10 @@ api_key = os.getenv("GOOGLE_API_KEY")
 class RAGSystem:
     def __init__(self, persist_directory="./rag_db"):
         self.persist_directory = persist_directory
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
-            google_api_key=api_key
+        self.embeddings = HuggingFaceEmbeddings(
+        model_name="all-MiniLM-L6-v2"
         )
+        
         self.vector_store = None
         self.retriever = None
         self.qa_chain = None
@@ -103,7 +104,7 @@ class RAGSystem:
 
         Context: {context}
 
-        Question: {question}
+        Question: {input}
 
         Answer:"""
         
@@ -119,9 +120,11 @@ class RAGSystem:
         """Query the RAG system"""
         if not self.qa_chain:
             self.create_qa_chain()
-        
-        response = self.qa_chain.invoke({"query": question})
-        
+        print(type(question))
+        try:
+            response = self.qa_chain.invoke({"input": question})
+        except Exception as error:
+            print(error)
         if verbose:
             print(f"Question: {question}")
             print(f"Sources: {len(response['source_documents'])}")
