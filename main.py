@@ -5,22 +5,26 @@ from langchain_chroma import Chroma
 #from langchain.chains import RetrievalQA
 #from langchain.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.callbacks import StreamingStdOutCallbackHandler
+#from langchain.callbacks import StreamingStdOutCallbackHandler
 import os
 from dotenv import load_dotenv
 
 #from langchain_openai import ChatOpenAI
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains import create_retrieval_chain
-from langchain.prompts import ChatPromptTemplate
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+
+from langchain_classic.chains import create_retrieval_chain
+from langchain_classic.prompts import ChatPromptTemplate
 
 load_dotenv()
+
+api_key = os.getenv("GOOGLE_API_KEY")
 
 class RAGSystem:
     def __init__(self, persist_directory="./rag_db"):
         self.persist_directory = persist_directory
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001"
+            model="models/embedding-001",
+            google_api_key=api_key
         )
         self.vector_store = None
         self.retriever = None
@@ -89,7 +93,8 @@ class RAGSystem:
         # Initialize LLM
         llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash",
-            temperature=0.1
+            temperature=0.1,
+            google_api_key=api_key
         )
         
         # Create custom prompt
@@ -102,20 +107,14 @@ class RAGSystem:
 
         Answer:"""
         
-        PROMPT = PromptTemplate(
-            template=prompt_template,
-            input_variables=["context", "question"]
-        )
-        
+        PROMPT = ChatPromptTemplate.from_template(prompt_template)
+
+        # Combine documents
+        document_chain = create_stuff_documents_chain(llm, PROMPT)
+
         # Create QA chain
-        self.qa_chain = RetrievalQA.from_chain_type(
-            llm=llm,
-            chain_type="stuff",
-            retriever=self.retriever,
-            chain_type_kwargs={"prompt": PROMPT},
-            return_source_documents=True
-        )
-    
+        self.qa_chain = create_retrieval_chain(self.retriever, document_chain)
+
     def query(self, question, verbose=False):
         """Query the RAG system"""
         if not self.qa_chain:
