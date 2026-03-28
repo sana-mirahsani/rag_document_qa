@@ -15,6 +15,9 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.prompts import ChatPromptTemplate
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.llms import Ollama
+
+
 
 load_dotenv()
 
@@ -92,11 +95,12 @@ class RAGSystem:
     def create_qa_chain(self, streaming=True):
         """Create the complete RAG chain"""
         # Initialize LLM
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
+        llm = Ollama(model="llama3")
+        """llm = ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash",
             temperature=0.1,
             google_api_key=api_key
-        )
+        )"""
         
         # Create custom prompt
         prompt_template = """Use the following context to answer the question. 
