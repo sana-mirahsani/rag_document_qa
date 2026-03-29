@@ -16,6 +16,8 @@ from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.prompts import ChatPromptTemplate
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.llms import Ollama
+from langchain_community.llms import HuggingFacePipeline
+from transformers import pipeline
 
 
 
@@ -95,7 +97,14 @@ class RAGSystem:
     def create_qa_chain(self, streaming=True):
         """Create the complete RAG chain"""
         # Initialize LLM
-        llm = Ollama(model="llama3")
+        pipe = pipeline(
+        "text-generation",
+        model="google/flan-t5-large",
+        max_new_tokens=150,
+        temperature=0.7
+        )
+        llm = HuggingFacePipeline(pipeline=pipe)
+        #llm = Ollama(model="llama3")
         """llm = ChatGoogleGenerativeAI(
             model="gemini-1.5-flash",
             temperature=0.1,
@@ -131,7 +140,7 @@ class RAGSystem:
             print(error)
         if verbose:
             print(f"Question: {question}")
-            print(f"Sources: {len(response['source_documents'])}")
+            print(f"Sources: {response}")
         
         return response
 
@@ -144,7 +153,7 @@ if not os.path.exists("./data"):
     os.makedirs("./data")
     
     # Create sample text file
-    with open("./data/sample.txt", "w", encoding="utf-8") as f:
+    with open("./data/sample1.txt", "w", encoding="utf-8") as f:
         f.write("""RAG (Retrieval Augmented Generation) Systems
 
 RAG systems combine the power of retrieval and generation to provide accurate, contextual responses.
@@ -177,14 +186,25 @@ try:
         rag.setup_retriever(k=5, search_type="similarity")
         
         # How to query your RAG system - simple example
-        question = "What are the main benefits of using RAG systems?"
+        question = "where is Iran?"
         response = rag.query(question, verbose=True)  # Returns answer + sources
         
-        print(f"\nAnswer: {response['result']}")
-        print(f"\nSources used: {len(response['source_documents'])}")
+        raw_answer = response["answer"]
+
+        # Extract only the final answer
+        if "Answer:" in raw_answer:
+            clean_answer = raw_answer.split("Answer:")[-1].strip()
+        else:
+            clean_answer = raw_answer.strip()
+
+        print("\nFinal Answer:")
+        print(clean_answer)
+        #print(f"\nAnswer: {response['result']}")
+        #print(f"\nSources used: {len(response['source_documents'])}")
         
         # Show source content
-        for i, doc in enumerate(response['source_documents']):
+        
+        for i, doc in enumerate(response['context']):
             print(f"\nSource {i+1}: {doc.page_content[:200]}...")
     else:
         print("No documents found in ./data directory")
