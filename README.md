@@ -135,7 +135,3 @@ project/
 
 🔗 LinkedIn: [https://www.linkedin.com/in/sana-mirahsani](https://www.linkedin.com/in/sana-mirahsani)
 💻 GitHub: [https://github.com/sana-mirahsani](https://github.com/sana-mirahsani)
-
-```
-
----
