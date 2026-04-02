@@ -2,14 +2,11 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, T
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_chroma import Chroma
-#from langchain.chains import RetrievalQA
-#from langchain.prompts import PromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
-#from langchain.callbacks import StreamingStdOutCallbackHandler
+
 import os
 from dotenv import load_dotenv
 
-#from langchain_openai import ChatOpenAI
+
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 
 from langchain_classic.chains import create_retrieval_chain
@@ -104,12 +101,6 @@ class RAGSystem:
         temperature=0.7
         )
         llm = HuggingFacePipeline(pipeline=pipe)
-        #llm = Ollama(model="llama3")
-        """llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
-            temperature=0.1,
-            google_api_key=api_key
-        )"""
         
         # Create custom prompt
         prompt_template = """Use the following context to answer the question. 
@@ -172,7 +163,6 @@ How RAG Works:
 
 Popular vector databases for RAG include ChromaDB, Pinecone, Weaviate, and FAISS.""")
 
-# Option 1: Build new RAG index from scratch (for beginners)
 try:
     documents = rag.load_documents("./data")
     if documents:
